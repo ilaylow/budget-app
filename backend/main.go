@@ -1,25 +1,23 @@
 package main
 
 import (
+	routes "budget-app/backend/routes"
+
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func main() {
-	// Creates default gin router with Logger and Recovery middleware already attached
-	router := gin.Default()
+	port := "8080"
 
-	// Create API route group
-	api := router.Group("/api")
-	{
-		// Add /hello GET route to router and define route handler function
-		api.GET("/hello", func(ctx *gin.Context) {
-			ctx.JSON(200, gin.H{"msg": "world"})
-		})
-	}
+	router := gin.New()
+	router.Use(gin.Logger())
 
-	router.NoRoute(func(ctx *gin.Context) { ctx.JSON(http.StatusNotFound, gin.H{}) })
+	routes.AuthRoutes(router)
+	routes.userRoutes(router)
 
-	// Start listening and serving requests
-	router.Run(":8080")
+	router.GET("/api-1", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{"success": "Access granted api-1"})
+	})
+
+	router.RUN(":" + port)
 }
