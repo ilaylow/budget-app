@@ -1,7 +1,7 @@
 package models
 
 import (
-	"go.mongodb/org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type User struct {
