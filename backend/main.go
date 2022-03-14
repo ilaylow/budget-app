@@ -19,5 +19,5 @@ func main() {
 		ctx.JSON(200, gin.H{"success": "Access granted api-1"})
 	})
 
-	router.RUN(":" + port)
+	router.Run(":" + port)
 }
