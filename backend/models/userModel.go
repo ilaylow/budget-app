@@ -6,6 +6,7 @@ import (
 
 type User struct {
 	ID       primitive.ObjectID `bson:"_id"`
-	name     *string            `json:"name" validate:"required, min=2, max=100"`
-	password *string            `json: "password" validate:"required min=6"`
+	Name     *string            `json:"name" validate:"required, min=2, max=100"`
+	Email    *string            `json:"email" validate:"email, required"`
+	Password *string            `json:"password" validate:"required, min=6"`
 }
