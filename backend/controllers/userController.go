@@ -225,3 +225,15 @@ func ShowHome() gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, gin.H{"message": "This is home page"})
 	}
 }
+
+func CreateBudget() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"message": "Creating Budget Page"})
+	}
+}
+
+func ShowExpenses() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"message": "Showing Expenses Page"})
+	}
+}

@@ -14,4 +14,7 @@ func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.GET("/home", controller.ShowHome())
 	incomingRoutes.GET("/users", controller.GetUsers())
 	incomingRoutes.GET("/users/:user_id", controller.GetUser())
+	incomingRoutes.GET("/expenses", controller.showExpenses())
+	incomingRoutes.POST("/createbudget", controller.createBudget())
+
 }
