@@ -11,6 +11,7 @@ import (
 // Uses authentication middleware to authenticate users before handling any user specific requests
 func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.Use(middleware.Authenticate())
+	incomingRoutes.GET("/home", controller.ShowHome())
 	incomingRoutes.GET("/users", controller.GetUsers())
 	incomingRoutes.GET("/users/:user_id", controller.GetUser())
 }
