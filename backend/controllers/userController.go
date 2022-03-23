@@ -5,7 +5,6 @@ import (
 	helper "budget-app/backend/helpers"
 	"budget-app/backend/models"
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -36,7 +35,7 @@ func VerifyPassword(userPassword string, foundUserPassword string) (bool, string
 	msg := ""
 
 	if err != nil {
-		msg = fmt.Sprintf("email or password is incorrect")
+		msg = "Email or password is incorrect"
 		check = false
 	}
 
@@ -90,7 +89,7 @@ func SignUp() gin.HandlerFunc {
 
 		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
 		if insertErr != nil {
-			msg := fmt.Sprintf("User item was not created")
+			msg := "User item was not created"
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -121,7 +120,7 @@ func SignIn() gin.HandlerFunc {
 
 		passwordIsValid, msg := VerifyPassword(*user.Password, *foundUser.Password)
 
-		if passwordIsValid != true {
+		if !passwordIsValid {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
 			return
 		}
@@ -161,8 +160,10 @@ func GetUsers() gin.HandlerFunc {
 			page = 1
 		}
 
-		startIndex := (page - 1) * recordPerPage
-		startIndex, err = strconv.Atoi(c.Query("startIndex"))
+		startIndex, err2 := strconv.Atoi(c.Query("startIndex"))
+		if err2 != nil {
+			startIndex = (page - 1) * recordPerPage
+		}
 
 		matchStage := bson.D{primitive.E{Key: "$match", Value: bson.D{{}}}}
 		groupStage := bson.D{primitive.E{Key: "$group", Value: bson.D{
@@ -216,5 +217,11 @@ func GetUser() gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, user)
+	}
+}
+
+func ShowHome() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{"message": "This is home page"})
 	}
 }
