@@ -13,4 +13,5 @@ type User struct {
 	Password      *string            `json:"password" validate:"required,min=6"`
 	Token         *string            `json:"token"`
 	Refresh_Token *string            `json:"refresh_token"`
+	Salary        int32              `json:"salary"`
 }

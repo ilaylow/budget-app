@@ -19,6 +19,9 @@ import (
 )
 
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
+var budgetCollection *mongo.Collection = database.OpenCollection(database.Client, "budget")
+var expenseCollection *mongo.Collection = database.OpenCollection(database.Client, "expense")
+
 var validate = validator.New()
 
 func HashPassword(password string) string {
@@ -89,8 +92,7 @@ func SignUp() gin.HandlerFunc {
 
 		resultInsertionNumber, insertErr := userCollection.InsertOne(ctx, user)
 		if insertErr != nil {
-			msg := "User item was not created"
-			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User item was not created"})
 			return
 		}
 
@@ -220,8 +222,218 @@ func GetUser() gin.HandlerFunc {
 	}
 }
 
-func ShowHome() gin.HandlerFunc {
+func DeleteUser() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"message": "This is home page"})
+		userId := ctx.Param("user_id")
+
+		ctx1, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		// Delete from User, Budget, and Expense Collection
+		_, err := userCollection.DeleteOne(ctx1, bson.M{"user_id": userId})
+		_, err1 := budgetCollection.DeleteOne(ctx1, bson.M{"user_id": userId})
+		expensesCount, err2 := expenseCollection.DeleteOne(ctx1, bson.M{"user_id": userId})
+
+		if err != nil || err1 != nil || err2 != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"expenses_deleted": expensesCount})
+	}
+}
+
+func GetBudget() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		// Obtain user id
+		userId := ctx.Request.Header.Get("user_id")
+
+		var ctx1, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		var budget models.Budget
+		err := budgetCollection.FindOne(ctx1, bson.M{"user_id": userId}).Decode(&budget)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "User has no budget plan created!"})
+		}
+
+		ctx.JSON(http.StatusOK, budget)
+
+	}
+}
+
+func CreateBudget() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		ctx1, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		// Bind request object to budget Object
+		var createBudget models.Budget
+		if err := ctx.BindJSON(&createBudget); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Validate Budget Struct
+		if validationErr := validate.Struct(createBudget); validationErr != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+			return
+		}
+
+		userCount, err := userCollection.CountDocuments(ctx1, bson.M{"user_id": createBudget.User_ID})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if userCount == 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "User doesn't exist!"})
+			return
+		}
+
+		// Check now if user already has a budget, if so then throw error
+		budgetCount, err := budgetCollection.CountDocuments(ctx1, bson.M{"user_id": createBudget.User_ID})
+		log.Println(budgetCount)
+
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if budgetCount != 0 {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "User already has a budget plan in place!"})
+			return
+		}
+
+		// Define object to be created
+		createBudget.ID = primitive.NewObjectID()
+		createBudget.Budget_ID = createBudget.ID.Hex()
+		createBudget.Date_Created = time.Now()
+
+		resultInsertionNumber, insertErr := budgetCollection.InsertOne(ctx1, createBudget)
+		if insertErr != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Budget item cannot be created!"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, resultInsertionNumber)
+	}
+}
+
+func DeleteBudget() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		budgetId := ctx.Param("budget_id")
+		log.Println(budgetId)
+
+		ctx1, cancel := context.WithTimeout(context.Background(), time.Second*100)
+		defer cancel()
+
+		deleteResult, err := budgetCollection.DeleteOne(ctx1, bson.M{"budget_id": budgetId})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Budget can't be deleted!"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, deleteResult)
+	}
+}
+
+func GetExpenses() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// Obtain user id
+		userId := ctx.Request.Header.Get("user_id")
+
+		ctx1, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		// Get expense through userID
+		cursor, err := expenseCollection.Find(ctx1, bson.M{"user_id": userId})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		// From: https://stackoverflow.com/questions/54876209/find-all-documents-in-a-collection-with-mongo-go-driver
+		var expenses []models.Expense
+		for cursor.Next(ctx1) {
+			var elem models.Expense
+			err := cursor.Decode(&elem)
+			if err != nil {
+				log.Fatal(err)
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			expenses = append(expenses, elem)
+		}
+
+		if err := cursor.Err(); err != nil {
+			log.Fatal(err)
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		cursor.Close(ctx1)
+
+		ctx.JSON(http.StatusOK, gin.H{"expenses": expenses})
+
+	}
+}
+
+func CreateExpense() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		ctx1, cancel := context.WithTimeout(context.Background(), time.Second*100)
+		defer cancel()
+
+		// Bind ctx to JSON
+		var createExpense models.Expense
+		if err := ctx.BindJSON(&createExpense); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Check if user even exists
+		userCount, err := userCollection.CountDocuments(ctx1, bson.M{"user_id": createExpense.User_ID})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if userCount == 0 {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "User doesn't exist!"})
+			return
+		}
+
+		// Define object to be created
+		createExpense.ID = primitive.NewObjectID()
+		createExpense.Expense_ID = createExpense.ID.Hex()
+		createExpense.Date_Created = time.Now()
+
+		resultInsertionNumber, insertErr := expenseCollection.InsertOne(ctx1, createExpense)
+		if insertErr != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Expense item cannot be created!"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, resultInsertionNumber)
+
+	}
+}
+
+func DeleteExpense() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		expenseId := ctx.Param("expense_id")
+
+		ctx1, cancel := context.WithTimeout(context.Background(), time.Second*100)
+		defer cancel()
+
+		deleteResult, err := expenseCollection.DeleteOne(ctx1, bson.M{"expense_id": expenseId})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Expense can't be deleted!"})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, deleteResult)
 	}
 }
