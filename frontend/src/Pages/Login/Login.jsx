@@ -1,24 +1,21 @@
-import React, {useState, useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {Form, Button} from "react-bootstrap";
 import styles from "./login.module.css";
 import { signIn } from "../../api";
 import { Navigate } from "react-router-dom";
+import { setWithExpiry, getWithExpiry } from "../../Helper/helperToken";
 
 const initialState = {email: "", password: ""}
+const HOUR_TO_MILLISECONDS = 1000 * 60 * 60
 
 export const Login = () => {
 
-    useEffect(() => {
-        if (localStorage.getItem("Token")){
-            setLoggedIn(true);
-        }
-    }, []);
-
+    const [isLoggedIn, setLoggedIn] = useState(getWithExpiry("token"));
     const [userState, setUserState] = useState(initialState);
-    const [isLoggedIn, setLoggedIn] = useState(false);
 
     const handleInput = (event) => {
         setUserState({...userState, [event.target.name]: event.target.value})
+        setLoggedIn(false);
     }
 
     const login = (event) => {
@@ -29,10 +26,10 @@ export const Login = () => {
             const data = response.data;
             console.log(data);
 
-            localStorage.setItem("User_ID", data["user_id"]);
-            localStorage.setItem("User_Type", data["user_type"]);
-            localStorage.setItem("Token", data["token"]);
-            localStorage.setItem("Refresh_Token", data["refresh_token"]);
+            setWithExpiry("user_ID", data["user_id"], HOUR_TO_MILLISECONDS);
+            setWithExpiry("user_Type", data["user_type"], HOUR_TO_MILLISECONDS);
+            setWithExpiry("token", data["token"], HOUR_TO_MILLISECONDS);
+            setWithExpiry("refresh_token", data["refresh_token"], HOUR_TO_MILLISECONDS);
             
             setLoggedIn(true);
 
@@ -65,9 +62,13 @@ export const Login = () => {
                     <Form.Group className="mb-3" controlId="formBasicCheckbox">
                         <Form.Check type="checkbox" label="Stay Signed In" />
                     </Form.Group>
-                    <Button variant="primary" type="submit" onClick={login}>
-                        Submit
+                    <span>
+                        <p>Don't have account? Click <a href="/signup">here</a></p>
+                    </span>
+                    <Button variant="primary" type="submit" size="lg" active onClick={login}>
+                        Login
                     </Button>
+                    
                 </Form>
 
                 </div>

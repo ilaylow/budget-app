@@ -1,21 +1,16 @@
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import {Form, Button} from "react-bootstrap";
 import styles from "./SignUp.module.css";
 import { signUp } from "../../api";
 import { Navigate } from "react-router-dom";
+import { getWithExpiry } from "../../Helper/helperToken";
+
 
 const initialState = {name: "", email: "", password: "", user_type:"USER"}
 
 export const SignUp = () => {
-
-    useEffect(() => {
-        if (localStorage.getItem("Token")){
-            //setLoggedIn(true);
-        }
-    }, []);
-
     const [userState, setUserState] = useState(initialState);
-    const [isLoggedIn, setLoggedIn] = useState(false);
+    const [isLoggedIn, setLoggedIn] = useState(getWithExpiry("token"));
 
     const handleInput = (event) => {
         setUserState({...userState, [event.target.name]: event.target.value})
@@ -64,10 +59,13 @@ export const SignUp = () => {
                         <Form.Label>Password</Form.Label>
                         <Form.Control name="password" type="password" placeholder="Password" onChange={handleInput}/>
                     </Form.Group>
-
-                    <Button variant="primary" type="submit" onClick={signup}>
-                        Submit
+                    <span>
+                        <p>Already have an account? Click <a href="/login">here</a></p>
+                    </span>
+                    <Button variant="primary" type="submit" size="lg" active onClick={signup}>
+                        Sign Up
                     </Button>
+                    
                 </Form>
 
                 </div>

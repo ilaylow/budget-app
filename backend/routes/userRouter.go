@@ -13,6 +13,7 @@ func UserRoutes(incomingRoutes *gin.Engine) {
 	incomingRoutes.Use(middleware.Authenticate())
 	incomingRoutes.GET("/budget", controller.GetBudget())
 	incomingRoutes.POST("/create_budget", controller.CreateBudget())
+	incomingRoutes.PATCH("/update_budget", controller.UpdateBudget())
 	incomingRoutes.DELETE("/delete_budget/:budget_id", controller.DeleteBudget())
 
 	incomingRoutes.GET("/users", controller.GetUsers())
