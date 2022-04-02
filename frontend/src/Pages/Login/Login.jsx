@@ -15,7 +15,6 @@ export const Login = () => {
 
     const handleInput = (event) => {
         setUserState({...userState, [event.target.name]: event.target.value})
-        setLoggedIn(false);
     }
 
     const login = (event) => {
