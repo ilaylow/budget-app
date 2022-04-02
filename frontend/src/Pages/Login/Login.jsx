@@ -11,6 +11,7 @@ const HOUR_TO_MILLISECONDS = 1000 * 60 * 60
 export const Login = () => {
 
     const [isLoggedIn, setLoggedIn] = useState(getWithExpiry("token"));
+    const [wrongPassword, setWrongPassword] = useState(getWithExpiry(false));
     const [userState, setUserState] = useState(initialState);
 
     const handleInput = (event) => {
@@ -34,6 +35,7 @@ export const Login = () => {
 
         }).catch((err) => {
             console.log(err.response);
+            setWrongPassword(true)
         })
     }
 
@@ -64,6 +66,7 @@ export const Login = () => {
                     <span>
                         <p>Don't have account? Click <a href="/signup">here</a></p>
                     </span>
+                    {wrongPassword && <p style={{color: "red"}}>Incorrect email or password entered!</p>}
                     <Button variant="primary" type="submit" size="lg" active onClick={login}>
                         Login
                     </Button>
