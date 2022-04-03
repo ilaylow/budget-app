@@ -3,7 +3,6 @@ package helper
 import (
 	"budget-app/backend/database"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -44,7 +43,7 @@ func GenerateAllTokens(email string, name string, user_type string, uid string) 
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
+	token, _ := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
 
 	if err != nil {
@@ -71,13 +70,13 @@ func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
 
 	claims, ok := token.Claims.(*SignedDetails)
 	if !ok {
-		msg = fmt.Sprintf("The token is invalid")
+		msg = "The token is invalid"
 		msg = err.Error()
 		return nil, msg
 	}
 
 	if claims.ExpiresAt < time.Now().Local().Unix() {
-		msg = fmt.Sprintf("Token has expired")
+		msg = "Token has expired"
 		msg = err.Error()
 		return nil, msg
 	}

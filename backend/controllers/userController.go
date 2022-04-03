@@ -247,6 +247,7 @@ func GetBudget() gin.HandlerFunc {
 
 		// Obtain user id
 		userId := ctx.Request.Header.Get("user_id")
+		log.Println("UserID: " + userId)
 
 		var ctx1, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
@@ -257,8 +258,9 @@ func GetBudget() gin.HandlerFunc {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "User has no budget plan created!"})
 		}
 
-		ctx.JSON(http.StatusOK, budget)
+		log.Println(budget)
 
+		ctx.JSON(http.StatusOK, budget)
 	}
 }
 
@@ -317,6 +319,34 @@ func CreateBudget() gin.HandlerFunc {
 		}
 
 		ctx.JSON(http.StatusOK, resultInsertionNumber)
+	}
+}
+
+func UpdateBudget() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+
+		// Bind request object to budget Object
+		var updatedBudget models.Budget
+		if err := ctx.BindJSON(&updatedBudget); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx1, cancel := context.WithTimeout(context.Background(), time.Second*100)
+		defer cancel()
+
+		updatedResult, err := budgetCollection.UpdateOne(ctx1,
+			bson.M{"user_id": updatedBudget.User_ID},
+			bson.D{primitive.E{Key: "$set", Value: bson.M{
+				"daily_increase":  updatedBudget.Daily_Increase,
+				"save_percentage": updatedBudget.Save_Percent,
+				"user_amount":     updatedBudget.User_Amount}}})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, updatedResult)
 	}
 }
 
@@ -416,7 +446,14 @@ func CreateExpense() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, resultInsertionNumber)
+		// Need to make amendments to user budget after insertion
+
+		updatedResult, err := helper.UpdateBudgetAmountAfterExpense(createExpense, true)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"insertExpenseNumber": resultInsertionNumber, "updateBudgetNumber": updatedResult})
 
 	}
 }
@@ -428,12 +465,25 @@ func DeleteExpense() gin.HandlerFunc {
 		ctx1, cancel := context.WithTimeout(context.Background(), time.Second*100)
 		defer cancel()
 
+		var findExpense models.Expense
+		err := expenseCollection.FindOne(ctx1, bson.M{"expense_id": expenseId}).Decode(&findExpense)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Expense can't be found!"})
+			return
+		}
+
 		deleteResult, err := expenseCollection.DeleteOne(ctx1, bson.M{"expense_id": expenseId})
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Expense can't be deleted!"})
 			return
 		}
 
-		ctx.JSON(http.StatusOK, deleteResult)
+		// Update user budget now
+		updatedResult, err := helper.UpdateBudgetAmountAfterExpense(findExpense, false)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"deleteResult": deleteResult, "updatedResult": updatedResult})
 	}
 }
