@@ -1,8 +1,8 @@
 import React, {useState} from "react";
 import {Form, Button} from "react-bootstrap";
 import styles from "./SignUp.module.css";
-import { signUp } from "../../api";
-import { Navigate } from "react-router-dom";
+import { signUp } from "../../Helper/helperUser";
+import { Navigate, useNavigate } from "react-router-dom";
 import { getWithExpiry } from "../../Helper/helperToken";
 
 
@@ -10,7 +10,8 @@ const initialState = {name: "", email: "", password: "", user_type:"USER"}
 
 export const SignUp = () => {
     const [userState, setUserState] = useState(initialState);
-    const [isLoggedIn, setLoggedIn] = useState(getWithExpiry("token"));
+    const isLoggedIn = getWithExpiry("token");
+    const navigate = useNavigate();
 
     const handleInput = (event) => {
         setUserState({...userState, [event.target.name]: event.target.value})
@@ -23,7 +24,7 @@ export const SignUp = () => {
             // User successfully logged in
             const data = response.data;
             console.log(data);
-            setLoggedIn(true);
+            navigate("/login")
 
         }).catch((err) => {
             console.error(err.response);

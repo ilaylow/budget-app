@@ -1,12 +1,31 @@
 import axios from "axios";
-import { API } from "../api";
 import { getWithExpiry } from "./helperToken";
 
+export const signIn = (formData) => API.post('/users/login', formData);
+export const signUp = (formData) => API.post('/users/signup', formData);
+
+const API = axios.create({baseURL: "http://localhost:8080"})
+
+export function createUserBudget(body, token){
+    
+    body["user_amount"] = parseFloat(body["user_amount"])
+    body["daily_increase"] = parseFloat(body["daily_increase"])
+    body["save_percentage"] = parseInt(body["save_percentage"])
+
+    console.log(body)
+
+    let config = {
+        headers: {
+          token: token,
+        }
+      }
+
+    return API.post("/create_budget", body, config)
+
+}
+
 export function getUserBudget(userID, token){
-    // We get the user budget from server
-    // Use Axios
-    console.log(token);
-    console.log(userID);
+
     let config = {
         headers: {
           user_id: userID,
@@ -18,11 +37,47 @@ export function getUserBudget(userID, token){
 
 }
 
+export function deleteUserBudget(budgetID, token){
+    let config = {
+        headers: {
+          token: token,
+        }
+    }
+    
+    return API.delete(`/delete_budget/${budgetID}`, config)
+}
+
+export function updateUserBudget(body, token){
+
+    body["user_amount"] = parseFloat(body["user_amount"])
+    body["daily_increase"] = parseFloat(body["daily_increase"])
+    body["save_percentage"] = parseInt(body["save_percentage"])
+
+    let config = {
+        headers: {
+          token: token,
+        }
+    }
+    
+    return API.patch("/update_budget", body, config)
+}
+
+export function createUserExpense(body, token){
+
+    body["cost"] = parseFloat(body["cost"])
+
+    let config = {
+        headers: {
+          token: token,
+        }
+      }
+
+    return API.post("/create_expense", body, config)
+
+}
+
 export function getUserExpenses(userID, token){
-    // We get the user budget from server
-    // Use Axios
-    console.log(token);
-    console.log(userID);
+
     let config = {
         headers: {
           user_id: userID,
@@ -33,3 +88,16 @@ export function getUserExpenses(userID, token){
     return API.get("/expenses", config)
 
 }
+
+export function deleteUserExpense(expenseID, token){
+
+    let config = {
+        headers: {
+          token: token,
+        }
+      }
+
+    return API.delete(`/delete_expense/${expenseID}`, config)
+
+}
+

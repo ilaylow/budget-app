@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Form, Button} from "react-bootstrap";
 import styles from "./login.module.css";
-import { signIn } from "../../api";
+import { signIn } from "../../Helper/helperUser";
 import { Navigate } from "react-router-dom";
 import { setWithExpiry, getWithExpiry } from "../../Helper/helperToken";
 
@@ -59,9 +59,6 @@ export const Login = () => {
                     <Form.Group className="mb-3" controlId="formBasicPassword">
                         <Form.Label>Password</Form.Label>
                         <Form.Control name="password" type="password" placeholder="Password" onChange={handleInput}/>
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="formBasicCheckbox">
-                        <Form.Check type="checkbox" label="Stay Signed In" />
                     </Form.Group>
                     <span>
                         <p>Don't have account? Click <a href="/signup">here</a></p>
