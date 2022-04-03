@@ -338,7 +338,7 @@ func UpdateBudget() gin.HandlerFunc {
 		updatedResult, err := budgetCollection.UpdateOne(ctx1,
 			bson.M{"user_id": updatedBudget.User_ID},
 			bson.D{primitive.E{Key: "$set", Value: bson.M{
-				"weekly_limit":    updatedBudget.Weekly_Limit,
+				"daily_increase":  updatedBudget.Daily_Increase,
 				"save_percentage": updatedBudget.Save_Percent,
 				"user_amount":     updatedBudget.User_Amount}}})
 		if err != nil {
@@ -446,7 +446,26 @@ func CreateExpense() gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, resultInsertionNumber)
+		// Need to make amendments to user budget after insertion
+
+		var budget models.Budget
+		errBudget := budgetCollection.FindOne(ctx1, bson.M{"user_id": createExpense.User_ID}).Decode(&budget)
+		if errBudget != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "User has no budget plan to update!"})
+		}
+
+		newAmountLeft := budget.User_Amount - createExpense.Cost
+
+		updatedResult, errUpdate := budgetCollection.UpdateOne(ctx1,
+			bson.M{"user_id": createExpense.User_ID},
+			bson.D{primitive.E{Key: "$set", Value: bson.M{
+				"user_amount": newAmountLeft}}})
+		if errUpdate != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"insertExpenseNumber": resultInsertionNumber, "updateBudgetNumber": updatedResult})
 
 	}
 }

@@ -1,7 +1,7 @@
 import React, {useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { getWithExpiry } from "../../Helper/helperToken";
-import {Form, Button, Card, ListGroup, ListGroupItem} from "react-bootstrap";
+import {Form, Button, Card, Table} from "react-bootstrap";
 import { logOut } from "../../Helper/helperToken";
 import { getUserBudget, getUserExpenses } from "../../Helper/helperUser";
 import styles from "./home.module.css"
@@ -60,10 +60,10 @@ export const Home = () => {
                             <Card.Body>
                                 <Card.Title>Amount Left: {budgetLoaded ? "$"+userBudget["user_amount"] : "" }</Card.Title>
                                 <Card.Text>
-                                Save Percentage: {budgetLoaded ? userBudget["save_percentage"] + "%" : ""}
+                                Target Save Percentage: {budgetLoaded ? userBudget["save_percentage"] + "%" : ""}
                                 </Card.Text>
                                 <Card.Text>
-                                Weekly Limit: {budgetLoaded ? "$"+userBudget["weekly_limit"] : ""}
+                                Daily Increase: {budgetLoaded ? "$"+userBudget["daily_increase"] : ""}
                                 </Card.Text>
                                 <Button active variant="primary">Edit budget</Button>
                             </Card.Body>
@@ -79,16 +79,43 @@ export const Home = () => {
                         }
                     </div>
 
-                    <div>
+                    <div style = {{marginLeft: "20%", marginRight: "20%", marginTop: "3%"}}>
                         {userExpenses
-                    ?   <ListGroup variant="flush" style = {{marginLeft: "20%", marginRight: "20%", marginTop: "3%"}}>
-                            <ListGroup.Item >{"Name"}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            {"Cost"}</ListGroup.Item>
-                            {
-                            userExpenses.map((expense, i) => <ListGroup.Item key={i}>{expense["name"]}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            {expense["cost"]}</ListGroup.Item>)
-                            }
-                        </ListGroup>
+                    ?   
+                        <div>
+                            <Table responsive="lg" >
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Cost</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                        {userExpenses.map((expense, i) => 
+                                        <tr>
+                                            <td>
+                                                {expense["name"]}
+                                            </td>
+                                            <td>
+                                                {expense["cost"]}
+                                            </td>
+                                            <td>
+                                                {expense["expense_date"]}
+                                            </td>
+                                            <td>
+                                            <Button variant="danger" type="submit" size="xs" active>
+                                                Delete
+                                            </Button>
+                                            </td>
+                                            
+                                        </tr>)}
+                                </tbody>
+                            </Table>
+                            <Button variant = "secondary">
+                                Add Expense
+                            </Button>
+                      </div>
                     : 
                         <h1>Expenses not here</h1>
                         }
