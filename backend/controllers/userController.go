@@ -448,21 +448,9 @@ func CreateExpense() gin.HandlerFunc {
 
 		// Need to make amendments to user budget after insertion
 
-		var budget models.Budget
-		errBudget := budgetCollection.FindOne(ctx1, bson.M{"user_id": createExpense.User_ID}).Decode(&budget)
-		if errBudget != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "User has no budget plan to update!"})
-		}
-
-		newAmountLeft := budget.User_Amount - createExpense.Cost
-
-		updatedResult, errUpdate := budgetCollection.UpdateOne(ctx1,
-			bson.M{"user_id": createExpense.User_ID},
-			bson.D{primitive.E{Key: "$set", Value: bson.M{
-				"user_amount": newAmountLeft}}})
-		if errUpdate != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+		updatedResult, err := helper.UpdateBudgetAmountAfterExpense(createExpense, true)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
 		}
 
 		ctx.JSON(http.StatusOK, gin.H{"insertExpenseNumber": resultInsertionNumber, "updateBudgetNumber": updatedResult})
@@ -477,12 +465,25 @@ func DeleteExpense() gin.HandlerFunc {
 		ctx1, cancel := context.WithTimeout(context.Background(), time.Second*100)
 		defer cancel()
 
+		var findExpense models.Expense
+		err := expenseCollection.FindOne(ctx1, bson.M{"expense_id": expenseId}).Decode(&findExpense)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Expense can't be found!"})
+			return
+		}
+
 		deleteResult, err := expenseCollection.DeleteOne(ctx1, bson.M{"expense_id": expenseId})
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Expense can't be deleted!"})
 			return
 		}
 
-		ctx.JSON(http.StatusOK, deleteResult)
+		// Update user budget now
+		updatedResult, err := helper.UpdateBudgetAmountAfterExpense(findExpense, false)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+		}
+
+		ctx.JSON(http.StatusOK, gin.H{"deleteResult": deleteResult, "updatedResult": updatedResult})
 	}
 }

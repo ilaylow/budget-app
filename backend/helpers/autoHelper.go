@@ -16,7 +16,7 @@ import (
 var budgetCollection *mongo.Collection = database.OpenCollection(database.Client, "budget")
 
 func IncreaseUserAmountEachDay() {
-	gocron.Every(1).Minute().Do(UpdateUserAmount)
+	gocron.Every(1).Day().Do(UpdateUserAmount)
 	<-gocron.Start()
 }
 
