@@ -4,7 +4,7 @@ import { getWithExpiry } from "./helperToken";
 export const signIn = (formData) => API.post('/users/login', formData);
 export const signUp = (formData) => API.post('/users/signup', formData);
 
-const API = axios.create({baseURL: "http://localhost:8080"})
+const API = axios.create({baseURL: "https://budget-app-pugo5p3mta-ts.a.run.app"})
 
 export function createUserBudget(body, token){
     
