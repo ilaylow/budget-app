@@ -339,7 +339,7 @@ func UpdateBudget() gin.HandlerFunc {
 			bson.M{"user_id": updatedBudget.User_ID},
 			bson.D{primitive.E{Key: "$set", Value: bson.M{
 				"daily_increase":  updatedBudget.Daily_Increase,
-				"save_percentage": updatedBudget.Save_Percent,
+				"save_percentage": updatedBudget.Save_Percentage,
 				"user_amount":     updatedBudget.User_Amount}}})
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
