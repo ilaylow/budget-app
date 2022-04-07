@@ -9,6 +9,10 @@ jobs:
   custom-deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
       - name: Run Build
         run: npm run build
         working-directory: frontend
