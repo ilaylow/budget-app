@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run Build
-        run: cd frontend && npm run build
+        run: npm run build
