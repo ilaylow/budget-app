@@ -98,13 +98,18 @@ export const Home = () => {
         getUserBudget(userId, token).then((res) => {
             console.log(res.data)
             userBudget = res.data;
+            userBudget["user_amount"] = userBudget["user_amount"].toFixed(2);
+
             setBudgetLoaded(true);
         }).catch((err) => {
             console.log(err.response);
         });
 
         getUserExpenses(userId, token).then((res) => {
-             userExpenses = res.data.expenses;
+            userExpenses = res.data.expenses;
+            // Reverse the list of expenses here so we have the latest on the top
+            userExpenses.reverse();
+
              console.log(userExpenses);
              setExpensesLoaded(true);
         }).catch((err) => {
