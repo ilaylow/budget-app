@@ -61,7 +61,7 @@ export const Login = () => {
                         <Form.Control name="password" type="password" placeholder="Password" onChange={handleInput}/>
                     </Form.Group>
                     <span>
-                        <p>Don't have account? Click <a href="/signup">here</a></p>
+                        <p>Don't have an account? Click <a href="/signup">here</a></p>
                     </span>
                     {wrongPassword && <p style={{color: "red"}}>Incorrect email or password entered!</p>}
                     <Button variant="primary" type="submit" size="lg" active onClick={login}>
