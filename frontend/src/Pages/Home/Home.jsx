@@ -6,6 +6,7 @@ import { logOut } from "../../Helper/helperToken";
 import { getUserBudget, getUserExpenses, deleteUserExpense, createUserExpense, deleteUserBudget, updateUserBudget } from "../../Helper/helperUser";
 import styles from "./home.module.css"
 import "./coffee.css";
+import { sortExpenses } from "../../Helper/helperExpense";
 
 let userBudget = null;
 let userExpenses = [];
@@ -109,7 +110,7 @@ export const Home = () => {
         getUserExpenses(userId, token).then((res) => {
             userExpenses = res.data.expenses;
             // Reverse the list of expenses here so we have the latest on the top
-            userExpenses.reverse();
+            userExpenses = sortExpenses(userExpenses, "expense_date");
 
             // Shorten so page isn't flooded when we get to 100s of expenses
             shortenedExpenses = userExpenses.slice(0, 10);
@@ -221,7 +222,7 @@ export const Home = () => {
                                         </tr>)}
                                 </tbody>
                             </Table>
-                            <Button variant = "info">
+                            <Button href = "\expenses" variant = "info">
                                 See All Expenses
                             </Button>
                       </div>
