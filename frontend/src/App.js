@@ -4,6 +4,7 @@ import { Login } from "./Pages/Login/Login"
 import { Home } from "./Pages/Home/Home"
 import {SignUp} from "./Pages/SignUp/SignUp"
 import { CreateBudget } from './Pages/CreateBudget/CreateBudget';
+import { Expenses } from './Pages/ExpensePage/Expenses';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route exact path="/home" element={<Home/>}/>
           <Route exact path="/signup" element={<SignUp/>}/>
           <Route exact path="/create_budget" element={<CreateBudget/>}/>
+          <Route exact path="/expenses" element={<Expenses/>}/>
         </Routes>
       </div>
     </Router>
