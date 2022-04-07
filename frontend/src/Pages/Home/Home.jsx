@@ -9,6 +9,7 @@ import "./coffee.css";
 
 let userBudget = null;
 let userExpenses = [];
+let shortenedExpenses = [];
 
 let initialExpenseState = {"name": "", "cost": "", "expense_date": ""}
 let initialUpdateBudgetState = {"user_amount": "", "daily_increase": "", "save_percentage": ""}
@@ -110,6 +111,10 @@ export const Home = () => {
             // Reverse the list of expenses here so we have the latest on the top
             userExpenses.reverse();
 
+            // Shorten so page isn't flooded when we get to 100s of expenses
+            shortenedExpenses = userExpenses.slice(0, 10);
+
+
              console.log(userExpenses);
              setExpensesLoaded(true);
         }).catch((err) => {
@@ -196,7 +201,7 @@ export const Home = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                        {userExpenses.map((expense, i) => 
+                                        {shortenedExpenses.map((expense, i) => 
                                         <tr key = {i}>
                                             <td>
                                                 {expense["name"]}
@@ -216,6 +221,9 @@ export const Home = () => {
                                         </tr>)}
                                 </tbody>
                             </Table>
+                            <Button variant = "info">
+                                See All Expenses
+                            </Button>
                       </div>
                     : 
                         <h2 style = {{marginLeft: "20%", opacity: "50%"}}>You currently have no expenses created!</h2>
