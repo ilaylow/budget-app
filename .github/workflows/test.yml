@@ -11,3 +11,4 @@ jobs:
     steps:
       - name: Run Build
         run: npm run build
+        working-directory: frontend
