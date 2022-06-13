@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup, Table } from "react-bootstrap";
 import { Navigate } from "react-router";
-import { processUserExpenses, sortExpenses } from "../../Helper/helperExpense";
+import { processUserExpenses, sortExpenses, getTotalSavedFromExpenses } from "../../Helper/helperExpense";
 import { getWithExpiry } from "../../Helper/helperToken";
-import { deleteUserExpense, getUserExpenses } from "../../Helper/helperUser";
+import { deleteUserExpense, getUserBudget, getUserExpenses } from "../../Helper/helperUser";
 
 let userExpenses = []
+let userBudget = null;
 let separatedExpenses = {}
 
 export const Expenses = () => {
@@ -15,6 +16,7 @@ export const Expenses = () => {
     const [yearSelected, setYearSelected] = useState(0);
     const [monthSelected, setMonthSelected] = useState(0);
     const [currentExpenses, setCurrentExpenses] = useState([]);
+    const [currentTotalSaved, setCurrentTotalSaved] = useState(0);
 
     const handleDelete = (event) => {
 
@@ -42,11 +44,35 @@ export const Expenses = () => {
         
         let currMonthExpenses = separatedExpenses[yearSelected][event.target.name];
         currMonthExpenses = sortExpenses(currMonthExpenses, "date");
+        setCurrentTotalSaved(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"]));
         setCurrentExpenses(currMonthExpenses);
+    }
+
+    const setMoneySavedColor = () => {
+        if (currentTotalSaved == 0){
+            return "black";
+        }
+
+        if (currentTotalSaved < 0){
+            return "red"
+        }
+
+        if (currentTotalSaved < 100){
+            return "orange"
+        }
+
+        return "green";
     }
 
     useEffect(async () => {
         const userId = getWithExpiry("user_ID");
+
+        getUserBudget(userId, isLoggedIn).then((res) => {
+            userBudget = res.data;
+
+        }).catch((err) => {
+            console.log(err.response);
+        });
 
         getUserExpenses(userId, isLoggedIn).then((res) => {
             userExpenses = res.data.expenses;
@@ -67,7 +93,7 @@ export const Expenses = () => {
         <div>
             <Button href = "/home" style = {{marginLeft: "7%", marginTop: "5%"}} size="lg" active variant ="danger">Back</Button>
             {isLoggedIn
-            ? <div style = {{marginLeft: "13%", marginTop: "6%"}}>
+            ? <div style = {{marginLeft: "13%", marginTop: "4%"}}>
                 <ButtonGroup size="lg" className="mb-2">
                 {
                     Object.keys(separatedExpenses).map((year, i) => {
@@ -88,35 +114,39 @@ export const Expenses = () => {
                 <div style = {{marginRight: "20%"}}>
                     {
                         monthSelected
-                    ?   <Table responsive="lg" >
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Cost</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                    {currentExpenses.map((expense, i) => 
-                                    <tr key = {i}>
-                                        <td>
-                                            {expense["name"]}
-                                        </td>
-                                        <td>
-                                            {expense["cost"]}
-                                        </td>
-                                        <td>
-                                            {expense["date"]}
-                                        </td>
-                                        <td>
-                                        <Button key = {i} name={expense["ID"]} variant="danger" type="submit" size="xs" active onClick = {handleDelete}>
-                                            Delete
-                                        </Button>
-                                        </td>
-                                        
-                                    </tr>)}
-                            </tbody>
-                        </Table>
+                    ?   
+                        <div>
+                            <h3 style={{marginTop: "3%", color: setMoneySavedColor()}}>Amount Saved: ${currentTotalSaved}</h3>
+                            <Table responsive="lg" >
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Cost</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                        {currentExpenses.map((expense, i) => 
+                                        <tr key = {i}>
+                                            <td>
+                                                {expense["name"]}
+                                            </td>
+                                            <td>
+                                                {expense["cost"]}
+                                            </td>
+                                            <td>
+                                                {expense["date"]}
+                                            </td>
+                                            <td>
+                                            <Button key = {i} name={expense["ID"]} variant="danger" type="submit" size="xs" active onClick = {handleDelete}>
+                                                Delete
+                                            </Button>
+                                            </td>
+                                            
+                                        </tr>)}
+                                </tbody>
+                            </Table>
+                        </div>
                     :   <></>
                     }
                 </div>
