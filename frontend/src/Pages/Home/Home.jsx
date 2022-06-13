@@ -120,7 +120,7 @@ export const Home = () => {
             const currYear = parseInt(shortenedExpenses[0]["expense_date"].split("/")[2])
             const currMonth = monthNames[parseInt(shortenedExpenses[0]["expense_date"].split("/")[1]) - 1]
             const currMonthExpenses = processUserExpenses(userExpenses)[currYear][currMonth]
-            const totalSaved = parseFloat(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"]));
+            const totalSaved = parseFloat(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"], -1, -1));
 
             setSavingColor(getSavingColor(totalSaved));
             setSavedForCurrMonth(totalSaved);
