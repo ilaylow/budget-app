@@ -2,10 +2,24 @@ export const monthNames = ["January", "February", "March", "April", "May", "June
   "July", "August", "September", "October", "November", "December"
 ];
 
-export function getTotalSavedFromExpenses(sortedUserExpenses, dailyIncrease){
+const getDays = (year, month) => {
+    return new Date(year, month, 0).getDate();
+};
+
+export function getTotalSavedFromExpenses(sortedUserExpenses, dailyIncrease, month, year){
     // Get the most recent date
-    const mostRecentDate = parseInt(sortedUserExpenses[0]["date"].split("/")[0])
-    const totalEarned = mostRecentDate * dailyIncrease;
+    const today = new Date().getDate();
+    const currMonth = new Date().getMonth();
+    const currYear = new Date().getFullYear();
+
+    let numDaysPassed = 0;
+    if ((monthNames.indexOf(month) === currMonth && year == currYear) || (month == -1 && year == -1)){
+        numDaysPassed = today;
+    } else{
+        numDaysPassed = getDays(year, monthNames.indexOf(month))
+    }
+    
+    const totalEarned = numDaysPassed * dailyIncrease;
 
     let totalSum = 0;
     sortedUserExpenses.forEach(x => {

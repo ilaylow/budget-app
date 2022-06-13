@@ -40,11 +40,11 @@ export const Expenses = () => {
     const handleSelectMonth = (event) => {
         event.preventDefault();
         setMonthSelected(event.target.name)
-        console.log(event.target.name)
         
         let currMonthExpenses = separatedExpenses[yearSelected][event.target.name];
         currMonthExpenses = sortExpenses(currMonthExpenses, "date");
-        setCurrentTotalSaved(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"]));
+        const totalSaved = getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"], event.target.name, yearSelected)
+        setCurrentTotalSaved(totalSaved);
         setCurrentExpenses(currMonthExpenses);
     }
 
