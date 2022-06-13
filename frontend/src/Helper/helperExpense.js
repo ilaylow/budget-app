@@ -1,6 +1,21 @@
-const monthNames = ["January", "February", "March", "April", "May", "June",
+export const monthNames = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
+
+export function getTotalSavedFromExpenses(sortedUserExpenses, dailyIncrease){
+    // Get the most recent date
+    const mostRecentDate = parseInt(sortedUserExpenses[0]["date"].split("/")[0])
+    const totalEarned = mostRecentDate * dailyIncrease;
+
+    let totalSum = 0;
+    sortedUserExpenses.forEach(x => {
+        totalSum += x["cost"];
+    })
+    
+    const totalSaved = (totalEarned - totalSum).toFixed(2);
+
+    return totalSaved;
+}
 
 export function sortExpenses(userExpenses, accesor){
     userExpenses.sort(
@@ -8,8 +23,8 @@ export function sortExpenses(userExpenses, accesor){
             const dateSplitX = x[accesor].split("/")
             const dateSplitY = y[accesor].split("/")
 
-            if (parseInt(dateSplitX[2]) == parseInt(dateSplitY[2])){
-                if (parseInt(dateSplitX[1]) == parseInt(dateSplitY[1])){
+            if (parseInt(dateSplitX[2]) === parseInt(dateSplitY[2])){
+                if (parseInt(dateSplitX[1]) === parseInt(dateSplitY[1])){
                     const dayX = parseInt(dateSplitX[0])
                     const dayY = parseInt(dateSplitY[0])
     
@@ -35,8 +50,6 @@ export function processUserExpenses(userExpenses){
     // Make a map where each key is a new year
 
     let expenseYears = {}
-
-    console.log(userExpenses)
 
     userExpenses.forEach((expense) => {
         let date = expense["expense_date"]

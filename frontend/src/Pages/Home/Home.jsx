@@ -6,7 +6,7 @@ import { logOut } from "../../Helper/helperToken";
 import { getUserBudget, getUserExpenses, deleteUserExpense, createUserExpense, deleteUserBudget, updateUserBudget } from "../../Helper/helperUser";
 import styles from "./home.module.css"
 import "./coffee.css";
-import { sortExpenses } from "../../Helper/helperExpense";
+import { getTotalSavedFromExpenses, monthNames, processUserExpenses, sortExpenses } from "../../Helper/helperExpense";
 
 let userBudget = null;
 let userExpenses = [];
@@ -23,6 +23,8 @@ export const Home = () => {
     const [expenseState, setExpenseState] = useState(initialExpenseState);
     const [isEditingBudget, setEditingBudget] = useState(false);
     const [updateBudgetState, setUpdateBudgetState] = useState(initialUpdateBudgetState);
+    const [savedForCurrMonth, setSavedForCurrMonth] = useState(0);
+    const [savingColor, setSavingColor] = useState("green");
 
     const handleDelete = (event) => {
 
@@ -98,7 +100,6 @@ export const Home = () => {
         console.log(userId);
 
         getUserBudget(userId, token).then((res) => {
-            console.log(res.data)
             userBudget = res.data;
             userBudget["user_amount"] = userBudget["user_amount"].toFixed(2);
 
@@ -115,14 +116,33 @@ export const Home = () => {
             // Shorten so page isn't flooded when we get to 100s of expenses
             shortenedExpenses = userExpenses.slice(0, 10);
 
+            // Process user expenses and get the most recent set
+            const currYear = parseInt(shortenedExpenses[0]["expense_date"].split("/")[2])
+            const currMonth = monthNames[parseInt(shortenedExpenses[0]["expense_date"].split("/")[1]) - 1]
+            const currMonthExpenses = processUserExpenses(userExpenses)[currYear][currMonth]
+            const totalSaved = parseFloat(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"]));
 
-             console.log(userExpenses);
-             setExpensesLoaded(true);
+            setSavingColor(getSavingColor(totalSaved));
+            setSavedForCurrMonth(totalSaved);
+            setExpensesLoaded(true);
         }).catch((err) => {
             console.log(err.response);
         })
 
     }, [])
+
+    const getSavingColor = (savings) => {
+
+        if (savings < 0){
+            return "red"
+        }
+
+        if (savings < 100){
+            return "orange"
+        }
+
+        return "green";
+    }
 
     return (
         <div>
@@ -144,6 +164,9 @@ export const Home = () => {
                                 <Card.Header><h3>Budget:</h3></Card.Header>
                                 <Card.Body>
                                     <Card.Title>Amount Left: {budgetLoaded ? "$"+userBudget["user_amount"] : "" }</Card.Title>
+                                    <Card.Title style = {{display: "inline-block"}}>Amount Saved (Month): </Card.Title>
+                                    <Card.Title style = {{display: "inline-block", color: savingColor}}> &nbsp; {budgetLoaded ? "$"+savedForCurrMonth : "" }
+                                    </Card.Title>
                                     <Card.Text>
                                     Target Save Percentage: {budgetLoaded ? userBudget["save_percentage"] + "%" : ""}
                                     </Card.Text>
