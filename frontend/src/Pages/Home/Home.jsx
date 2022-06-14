@@ -1,7 +1,7 @@
 import React, {useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { getWithExpiry } from "../../Helper/helperToken";
-import {Form, Button, Card, Table, InputGroup, FormControl} from "react-bootstrap";
+import {Button, Card, Table, InputGroup, FormControl} from "react-bootstrap";
 import { logOut } from "../../Helper/helperToken";
 import { getUserBudget, getUserExpenses, deleteUserExpense, createUserExpense, deleteUserBudget, updateUserBudget } from "../../Helper/helperUser";
 import styles from "./home.module.css"
@@ -56,10 +56,6 @@ export const Home = () => {
         setExpenseState({...expenseState, [event.target.name]: event.target.value})
     }
 
-    const handleSetEditingBudget = (event) => {
-        setEditingBudget(true);
-    }
-
     const handleCreateExpense = (event) => {
         expenseState["user_id"] = getWithExpiry("user_ID");
 
@@ -92,52 +88,58 @@ export const Home = () => {
         setUpdateBudgetState({...updateBudgetState, [event.target.name]: event.target.value})
     }
 
-    useEffect(async () => {
+    useEffect(() => {
     
         const userId = getWithExpiry("user_ID");
         const token = getWithExpiry("token");
 
         console.log(userId);
 
-        getUserBudget(userId, token).then((res) => {
-            userBudget = res.data;
-            userBudget["user_amount"] = userBudget["user_amount"].toFixed(2);
+        async function fetchUserData(){
+            getUserBudget(userId, token).then((res) => {
+                userBudget = res.data;
+                userBudget["user_amount"] = userBudget["user_amount"].toFixed(2);
+                
+                setBudgetLoaded(true);
 
-            setBudgetLoaded(true);
-        }).catch((err) => {
-            console.log(err.response);
-        });
+                getUserExpenses(userId, token).then((res) => {
+                    userExpenses = res.data.expenses;
+                    // Reverse the list of expenses here so we have the latest on the top
+                    userExpenses = sortExpenses(userExpenses, "expense_date");
+        
+                    // Shorten so page isn't flooded when we get to 100s of expenses
+                    shortenedExpenses = userExpenses.slice(0, 10);
+        
+                    // Process user expenses and get the most recent set
+                    const currYear = parseInt(shortenedExpenses[0]["expense_date"].split("/")[2])
+                    const currMonth = monthNames[parseInt(shortenedExpenses[0]["expense_date"].split("/")[1]) - 1]
+                    const currMonthExpenses = processUserExpenses(userExpenses)[currYear][currMonth]
+                    const totalSaved = parseFloat(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"], -1, -1));
+        
+                    setSavingColor(getSavingColor(totalSaved));
+                    setSavedForCurrMonth(totalSaved);
+                    setExpensesLoaded(true);
+                }).catch((err) => {
+                    console.log(err.response);
+                })
+            }).catch((err) => {
+                console.log(err.response);
+            });       
+        }
 
-        getUserExpenses(userId, token).then((res) => {
-            userExpenses = res.data.expenses;
-            // Reverse the list of expenses here so we have the latest on the top
-            userExpenses = sortExpenses(userExpenses, "expense_date");
-
-            // Shorten so page isn't flooded when we get to 100s of expenses
-            shortenedExpenses = userExpenses.slice(0, 10);
-
-            // Process user expenses and get the most recent set
-            const currYear = parseInt(shortenedExpenses[0]["expense_date"].split("/")[2])
-            const currMonth = monthNames[parseInt(shortenedExpenses[0]["expense_date"].split("/")[1]) - 1]
-            const currMonthExpenses = processUserExpenses(userExpenses)[currYear][currMonth]
-            const totalSaved = parseFloat(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"], -1, -1));
-
-            setSavingColor(getSavingColor(totalSaved));
-            setSavedForCurrMonth(totalSaved);
-            setExpensesLoaded(true);
-        }).catch((err) => {
-            console.log(err.response);
-        })
-
+        fetchUserData();
     }, [])
 
     const getSavingColor = (savings) => {
+        const threshold = userBudget["daily_increase"] * new Date().getDate() * userBudget["save_percentage"] * 0.01;
+        const threshold10Above = userBudget["daily_increase"] * new Date().getDate() * ((userBudget["save_percentage"] * 0.01) + 0.1);
 
-        if (savings < 0){
+
+        if (savings < threshold){
             return "red"
         }
 
-        if (savings < 100){
+        if (savings >= threshold && savings <= threshold10Above){
             return "orange"
         }
 
@@ -213,7 +215,7 @@ export const Home = () => {
                     </div>
 
                     <div style = {{marginLeft: "20%", marginRight: "20%", marginTop: "3%"}}>
-                        {userExpenses
+                        {expensesLoaded
                     ?   
                         <div>
                             <Table responsive="lg" >

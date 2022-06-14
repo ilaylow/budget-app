@@ -39,7 +39,7 @@ export const Expenses = () => {
 
     const handleSelectMonth = (event) => {
         event.preventDefault();
-        setMonthSelected(event.target.name)
+        setMonthSelected(event.target.name) 
         
         let currMonthExpenses = separatedExpenses[yearSelected][event.target.name];
         currMonthExpenses = sortExpenses(currMonthExpenses, "date");
@@ -49,44 +49,54 @@ export const Expenses = () => {
     }
 
     const setMoneySavedColor = () => {
+        const threshold = userBudget["daily_increase"] * new Date().getDate() * userBudget["save_percentage"] * 0.01;
+        const threshold10Above = userBudget["daily_increase"] * new Date().getDate() * ((userBudget["save_percentage"] * 0.01) + 0.1);
+
+        console.log(threshold);
+        console.log(threshold10Above)
         if (currentTotalSaved == 0){
             return "black";
         }
 
-        if (currentTotalSaved < 0){
+        if (currentTotalSaved <  threshold){
             return "red"
         }
 
-        if (currentTotalSaved < 100){
+        if (currentTotalSaved >= threshold && currentTotalSaved <= threshold10Above){
             return "orange"
         }
 
         return "green";
     }
 
-    useEffect(async () => {
+    useEffect(() => {
         const userId = getWithExpiry("user_ID");
 
-        getUserBudget(userId, isLoggedIn).then((res) => {
-            userBudget = res.data;
+        async function getUserData(){
+            getUserBudget(userId, isLoggedIn).then((res) => {
+                userBudget = res.data;
 
-        }).catch((err) => {
-            console.log(err.response);
-        });
-
-        getUserExpenses(userId, isLoggedIn).then((res) => {
-            userExpenses = res.data.expenses;
-            // Reverse the list of expenses here so we have the latest on the top
-            userExpenses.reverse();
-
-            separatedExpenses = processUserExpenses(userExpenses);
-            setYearlyExpenses(Object.keys(separatedExpenses));
+                getUserExpenses(userId, isLoggedIn).then((res) => {
+                    userExpenses = res.data.expenses;
+                    // Reverse the list of expenses here so we have the latest on the top
+                    userExpenses.reverse();
+        
+                    separatedExpenses = processUserExpenses(userExpenses);
+                    setYearlyExpenses(Object.keys(separatedExpenses));
+                    
+                     //console.log(userExpenses);
+                     console.log(separatedExpenses);
+                }).catch((err) => {
+                    console.log(err);
+                })
+    
+            }).catch((err) => {
+                console.log(err.response);
+            });
+    
             
-             //console.log(userExpenses);
-             console.log(separatedExpenses);
-        }).catch((err) => {
-            console.log(err);
-        })
+        }
+        getUserData()
     }, [])
 
     return (
