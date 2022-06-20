@@ -2,7 +2,7 @@ export const monthNames = ["January", "February", "March", "April", "May", "June
   "July", "August", "September", "October", "November", "December"
 ];
 
-const getDays = (year, month) => {
+export const getDays = (year, month) => {
     return new Date(year, month, 0).getDate();
 };
 

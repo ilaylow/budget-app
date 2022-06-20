@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup, Table } from "react-bootstrap";
 import { Navigate } from "react-router";
-import { processUserExpenses, sortExpenses, getTotalSavedFromExpenses } from "../../Helper/helperExpense";
+import { processUserExpenses, sortExpenses, getTotalSavedFromExpenses, getDays, monthNames} from "../../Helper/helperExpense";
 import { getWithExpiry } from "../../Helper/helperToken";
 import { deleteUserExpense, getUserBudget, getUserExpenses } from "../../Helper/helperUser";
 
@@ -47,13 +47,21 @@ export const Expenses = () => {
         setCurrentTotalSaved(totalSaved);
         setCurrentExpenses(currMonthExpenses);
     }
-
+ 
     const setMoneySavedColor = () => {
-        const threshold = userBudget["daily_increase"] * new Date().getDate() * userBudget["save_percentage"] * 0.01;
-        const threshold10Above = userBudget["daily_increase"] * new Date().getDate() * ((userBudget["save_percentage"] * 0.01) + 0.1);
+        let daysToUse, date = new Date(), monthSelectedIndex = monthNames.indexOf(monthSelected);
+        if (date.getMonth() == monthSelectedIndex){
+            daysToUse = date.getDate();
+        } else{
+            daysToUse = getDays(yearSelected, monthSelectedIndex)
+        }
+
+        const threshold = userBudget["daily_increase"] * daysToUse * userBudget["save_percentage"] * 0.01;
+        const threshold10Above = userBudget["daily_increase"] * daysToUse * ((userBudget["save_percentage"] * 0.01) + 0.1);
 
         console.log(threshold);
-        console.log(threshold10Above)
+        console.log(threshold10Above);
+        console.log(daysToUse);
         if (currentTotalSaved == 0){
             return "black";
         }
