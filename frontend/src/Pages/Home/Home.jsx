@@ -99,6 +99,10 @@ export const Home = () => {
             getUserBudget(userId, token).then((res) => {
                 userBudget = res.data;
                 userBudget["user_amount"] = userBudget["user_amount"].toFixed(2);
+
+                updateBudgetState["user_amount"] = userBudget["user_amount"]
+                updateBudgetState["daily_increase"] = userBudget["daily_increase"]
+                updateBudgetState["save_percentage"] = userBudget["save_percentage"]
                 
                 setBudgetLoaded(true);
 
@@ -186,15 +190,15 @@ export const Home = () => {
                                 <Card.Body style = {{marginRight: "20%", marginLeft: "20%"}}>
                                     <InputGroup size="sm" className="mb-3">
                                         <InputGroup.Text  id="inputGroup-sizing-sm">New User Amount ($)</InputGroup.Text>
-                                        <FormControl name = "user_amount" onChange = {handleUpdateBudgetInput} aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
+                                        <FormControl name = "user_amount" value = {updateBudgetState["user_amount"]} onChange = {handleUpdateBudgetInput} aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
                                     </InputGroup>
                                     <InputGroup size="sm" className="mb-3">
                                         <InputGroup.Text  id="inputGroup-sizing-sm">New Daily Increase ($)</InputGroup.Text>
-                                        <FormControl name = "daily_increase" onChange = {handleUpdateBudgetInput} aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
+                                        <FormControl name = "daily_increase" value = {updateBudgetState["daily_increase"]} onChange = {handleUpdateBudgetInput} aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
                                     </InputGroup>
                                     <InputGroup size="sm" className="mb-3">
                                         <InputGroup.Text  id="inputGroup-sizing-sm">New Save Percentage (%)</InputGroup.Text>
-                                        <FormControl name = "save_percentage" onChange = {handleUpdateBudgetInput} aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
+                                        <FormControl name = "save_percentage" value = {updateBudgetState["save_percentage"]} onChange = {handleUpdateBudgetInput} aria-label="Small" aria-describedby="inputGroup-sizing-sm" />
                                     </InputGroup>
                                     <Button onClick = {handleUpdateBudget} active variant="primary">Update budget</Button>
                                     <Button style = {{marginLeft: "2%"}} onClick = {(() => setEditingBudget(false))} active variant="danger">Cancel </Button>
