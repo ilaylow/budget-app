@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, ButtonGroup, Table } from "react-bootstrap";
 import { Navigate } from "react-router";
+import { ConfirmationModal } from "../../Components/ConfirmationModal";
 import { processUserExpenses, sortExpenses, getTotalSavedFromExpenses, getDays, monthNames} from "../../Helper/helperExpense";
 import { getWithExpiry } from "../../Helper/helperToken";
 import { deleteUserExpense, getUserBudget, getUserExpenses } from "../../Helper/helperUser";
@@ -8,6 +9,8 @@ import { deleteUserExpense, getUserBudget, getUserExpenses } from "../../Helper/
 let userExpenses = []
 let userBudget = null;
 let separatedExpenses = {}
+
+let expenseName = null;
 
 export const Expenses = () => {
     const isLoggedIn = getWithExpiry("token");
@@ -17,6 +20,12 @@ export const Expenses = () => {
     const [monthSelected, setMonthSelected] = useState(0);
     const [currentExpenses, setCurrentExpenses] = useState([]);
     const [currentTotalSaved, setCurrentTotalSaved] = useState(0);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+
+    const handleShowDeleteExpense = (event) => {
+        setShowConfirmation(true);
+        expenseName = event.target.name;
+    }
 
     const handleDelete = (event) => {
 
@@ -50,7 +59,7 @@ export const Expenses = () => {
  
     const setMoneySavedColor = () => {
         let daysToUse, date = new Date(), monthSelectedIndex = monthNames.indexOf(monthSelected);
-        if (date.getMonth() == monthSelectedIndex){
+        if (date.getMonth() === monthSelectedIndex){
             daysToUse = date.getDate();
         } else{
             daysToUse = getDays(yearSelected, monthSelectedIndex)
@@ -62,7 +71,7 @@ export const Expenses = () => {
         console.log(threshold);
         console.log(threshold10Above);
         console.log(daysToUse);
-        if (currentTotalSaved == 0){
+        if (currentTotalSaved === 0){
             return "black";
         }
 
@@ -109,6 +118,7 @@ export const Expenses = () => {
 
     return (
         <div>
+            <ConfirmationModal show = {showConfirmation} handleClose = {() => setShowConfirmation(false)} deleteItem = {handleDelete} expenseName = {expenseName}/>
             <Button href = "/home" style = {{marginLeft: "7%", marginTop: "5%"}} size="lg" active variant ="danger">Back</Button>
             {isLoggedIn
             ? <div style = {{marginLeft: "13%", marginTop: "4%"}}>
@@ -156,7 +166,7 @@ export const Expenses = () => {
                                                 {expense["date"]}
                                             </td>
                                             <td>
-                                            <Button key = {i} name={expense["ID"]} variant="danger" type="submit" size="xs" active onClick = {handleDelete}>
+                                            <Button key = {i} name={expense["ID"]} variant="danger" type="submit" size="xs" active onClick = {handleShowDeleteExpense}>
                                                 Delete
                                             </Button>
                                             </td>
