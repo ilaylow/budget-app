@@ -5,12 +5,14 @@ import {Button, Card, Table, InputGroup, FormControl} from "react-bootstrap";
 import { logOut } from "../../Helper/helperToken";
 import { getUserBudget, getUserExpenses, deleteUserExpense, createUserExpense, deleteUserBudget, updateUserBudget } from "../../Helper/helperUser";
 import styles from "./home.module.css"
-import "./coffee.css";
 import { getTotalSavedFromExpenses, monthNames, processUserExpenses, sortExpenses } from "../../Helper/helperExpense";
+import {ConfirmationModal} from "../../Components/ConfirmationModal";
 
 let userBudget = null;
 let userExpenses = [];
 let shortenedExpenses = [];
+let deleteFunction = null;
+let expenseName = null;
 
 let initialExpenseState = {"name": "", "cost": "", "expense_date": ""}
 let initialUpdateBudgetState = {"user_amount": "", "daily_increase": "", "save_percentage": ""}
@@ -25,6 +27,21 @@ export const Home = () => {
     const [updateBudgetState, setUpdateBudgetState] = useState(initialUpdateBudgetState);
     const [savedForCurrMonth, setSavedForCurrMonth] = useState(0);
     const [savingColor, setSavingColor] = useState("green");
+    const [showConfirmation, setShowConfirmation] = useState(false);
+
+    const handleShowDeleteExpense = (event) => {
+        
+        setShowConfirmation(true);
+        expenseName = event.target.name;
+        deleteFunction = handleDelete;
+    }
+
+    const handleShowDeleteBudget = (event) => {
+        
+        setShowConfirmation(true);
+        deleteFunction = handleBudgetDelete;
+
+    }
 
     const handleDelete = (event) => {
 
@@ -37,6 +54,7 @@ export const Home = () => {
         }).catch((err) => {
             console.log(err);
         });
+
     }
 
     const handleBudgetDelete = (event) => {
@@ -49,6 +67,7 @@ export const Home = () => {
         }).catch((err) => {
             console.log(err);
         });
+
     }
 
     const handleExpenseInput = (event) => {
@@ -161,7 +180,7 @@ export const Home = () => {
                                 Sign Out
                         </Button>
                     </div>
-
+                    <ConfirmationModal show = {showConfirmation} handleClose = {() => setShowConfirmation(false)} deleteItem = {deleteFunction} expenseName = {expenseName}/>
                     <div>
                         {userBudget
                     ?   <>
@@ -180,7 +199,7 @@ export const Home = () => {
                                     Daily Increase: {budgetLoaded ? "$"+userBudget["daily_increase"] : ""}
                                     </Card.Text>
                                     <Button active variant="primary" onClick = {(() => setEditingBudget(true))}>Edit budget</Button>
-                                    <Button style = {{marginLeft: "2%"}} onClick = {handleBudgetDelete} active variant="danger">Delete budget</Button>
+                                    <Button style = {{marginLeft: "2%"}} onClick = {handleShowDeleteBudget} active variant="danger">Delete budget</Button>
                                 </Card.Body>
                                 <Card.Footer className="text-muted">Last Updated: 16/11/2001</Card.Footer>
                             </Card>
@@ -243,7 +262,7 @@ export const Home = () => {
                                                 {expense["expense_date"]}
                                             </td>
                                             <td>
-                                            <Button key = {i} name={expense["ID"]} variant="danger" type="submit" size="xs" active onClick = {handleDelete}>
+                                            <Button key = {i} name={expense["ID"]} variant="danger" type="submit" size="xs" active onClick = {handleShowDeleteExpense}>
                                                 Delete
                                             </Button>
                                             </td>
