@@ -101,3 +101,15 @@ export function deleteUserExpense(expenseID, token){
 
 }
 
+export function updateUserPassword(email, password, updated_password){
+  
+  const body = {
+    "email": email,
+    "initial_password": password,
+    "updated_password": updated_password
+  }
+
+  return API.post("/update_password", body, null);
+  
+}
+

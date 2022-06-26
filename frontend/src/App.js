@@ -5,6 +5,7 @@ import { Home } from "./Pages/Home/Home"
 import {SignUp} from "./Pages/SignUp/SignUp"
 import { CreateBudget } from './Pages/CreateBudget/CreateBudget';
 import { Expenses } from './Pages/ExpensePage/Expenses';
+import { ForgotPassword } from './Pages/UpdatePassword/UpdatePassword';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route exact path="/signup" element={<SignUp/>}/>
           <Route exact path="/create_budget" element={<CreateBudget/>}/>
           <Route exact path="/expenses" element={<Expenses/>}/>
+          <Route exact path="/forgot_password" element={<ForgotPassword/>}/>
         </Routes>
       </div>
     </Router>
