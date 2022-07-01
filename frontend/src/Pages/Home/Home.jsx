@@ -135,11 +135,15 @@ export const Home = () => {
         
                     // Process user expenses and get the most recent set
                     const currDate = new Date();
-                    const currYear = parseInt(currDate.getFullYear())
+                    const currYear = currDate.getFullYear().toString()
                     const currMonth = monthNames[currDate.getMonth()]
-                    const currMonthExpenses = processUserExpenses(userExpenses)[currYear][currMonth]
-                    const totalSaved = parseFloat(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"], -1, -1));
 
+                    const currYearExpenses = processUserExpenses(userExpenses)[currYear]
+                    let totalSaved = 0;
+                    if (currYearExpenses[currMonth]){
+                        totalSaved = parseFloat(getTotalSavedFromExpenses(currYearExpenses[currMonth], userBudget["daily_increase"], -1, -1))
+                    }
+                    
                     setSavingColor(getSavingColor(totalSaved));
                     setSavedForCurrMonth(totalSaved);
                     setExpensesLoaded(true);
@@ -157,7 +161,6 @@ export const Home = () => {
     const getSavingColor = (savings) => {
         const threshold = userBudget["daily_increase"] * new Date().getDate() * userBudget["save_percentage"] * 0.01;
         const threshold10Above = userBudget["daily_increase"] * new Date().getDate() * ((userBudget["save_percentage"] * 0.01) + 0.1);
-
 
         if (savings < threshold){
             return "red"
