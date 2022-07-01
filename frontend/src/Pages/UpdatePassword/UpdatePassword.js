@@ -23,6 +23,7 @@ export const ForgotPassword = () => {
             setWrongPassword(true);
         } else{
             setWrongPassword(false);
+            updateUserPassword(passwordState);
         }
 
         event.preventDefault();
