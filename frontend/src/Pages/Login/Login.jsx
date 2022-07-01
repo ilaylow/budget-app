@@ -52,7 +52,7 @@ export const Login = () => {
                         <Form.Label>Email address</Form.Label>
                         <Form.Control type="email" name="email" placeholder="Enter email" onChange={handleInput}/>
                         <Form.Text className="text-muted">
-                        We'll never share your email with anyone else.
+                        We'll never share your email with anyone else. But we will for your password...
                         </Form.Text>
                     </Form.Group>
 
@@ -62,6 +62,9 @@ export const Login = () => {
                     </Form.Group>
                     <span>
                         <p>Don't have an account? Click <a href="/signup">here</a></p>
+                    </span>
+                    <span>
+                        <p style = {{fontSize: "90%"}}>Forgot your password? Click <a href="/forgot_password">here</a></p>
                     </span>
                     {wrongPassword && <p style={{color: "red"}}>Incorrect email or password entered!</p>}
                     <Button variant="primary" type="submit" size="lg" active onClick={login}>

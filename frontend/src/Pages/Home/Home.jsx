@@ -134,11 +134,12 @@ export const Home = () => {
                     shortenedExpenses = userExpenses.slice(0, 10);
         
                     // Process user expenses and get the most recent set
-                    const currYear = parseInt(shortenedExpenses[0]["expense_date"].split("/")[2])
-                    const currMonth = monthNames[parseInt(shortenedExpenses[0]["expense_date"].split("/")[1]) - 1]
+                    const currDate = new Date();
+                    const currYear = parseInt(currDate.getFullYear())
+                    const currMonth = monthNames[currDate.getMonth()]
                     const currMonthExpenses = processUserExpenses(userExpenses)[currYear][currMonth]
                     const totalSaved = parseFloat(getTotalSavedFromExpenses(currMonthExpenses, userBudget["daily_increase"], -1, -1));
-        
+
                     setSavingColor(getSavingColor(totalSaved));
                     setSavedForCurrMonth(totalSaved);
                     setExpensesLoaded(true);

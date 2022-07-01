@@ -101,3 +101,9 @@ export function deleteUserExpense(expenseID, token){
 
 }
 
+export function updateUserPassword(formData){
+
+  return API.post("/users/update_password", formData, null);
+  
+}
+

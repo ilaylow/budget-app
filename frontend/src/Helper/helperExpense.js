@@ -25,7 +25,7 @@ export function getTotalSavedFromExpenses(sortedUserExpenses, dailyIncrease, mon
     sortedUserExpenses.forEach(x => {
         totalSum += x["cost"];
     })
-    
+
     const totalSaved = (totalEarned - totalSum).toFixed(2);
 
     return totalSaved;
