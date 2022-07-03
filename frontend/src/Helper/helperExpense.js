@@ -16,7 +16,7 @@ export function getTotalSavedFromExpenses(sortedUserExpenses, dailyIncrease, mon
     if ((monthNames.indexOf(month) === currMonth && year == currYear) || (month == -1 && year == -1)){
         numDaysPassed = today;
     } else{
-        numDaysPassed = getDays(year, monthNames.indexOf(month))
+        numDaysPassed = getDays(year, monthNames.indexOf(month) + 1)
     }
     
     const totalEarned = numDaysPassed * dailyIncrease;
